@@ -41,6 +41,16 @@ const gameMessageWrap = document.getElementById('game-message-wrap');
 const gameMessageSub = document.getElementById('game-message-sub');
 const virusMaxEl = document.getElementById('virus-max');
 
+// Son joué quand le joueur clique sur une carte virus (défaite)
+const soundVirusLose = new Audio('assets/virus-lose.m4a');
+// Son joué à chaque clic sur une carte (révélation)
+const soundCardClick = new Audio('assets/card-click.mp3');
+// Son joué à la 6e carte saine révélée (remplace le clic pour cette carte)
+const soundSafeStreak = new Audio('assets/safe-streak.mp3');
+// Musique de fond en boucle
+const bgMusic = new Audio('assets/bg-music.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.5;
 // Mise à jour affichage solde et gains
 function updateUI() {
   if (balanceEl) balanceEl.textContent = balance.toFixed(2);
@@ -97,7 +107,15 @@ function renderGrid() {
     card.innerHTML = `
       <div class="card-face back">
         <span class="circuit" aria-hidden="true"></span>
-        <span class="lock-icon" aria-hidden="true">🔒</span>
+        <div class="card-back-inner" aria-hidden="true">
+          <span class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              <rect x="4" y="11" width="16" height="10" rx="2" ry="2"/>
+              <ellipse cx="12" cy="16" rx="1.5" ry="1.8"/>
+            </svg>
+          </span>
+        </div>
       </div>
       <div class="card-face front" style="display:none;"></div>
       <div class="card-face virus-face" style="display:none;"></div>
@@ -166,6 +184,10 @@ function revealCard(index) {
   cardEl.classList.add('revealed');
 
   if (value === 'virus') {
+    try {
+      soundVirusLose.currentTime = 0;
+      soundVirusLose.play();
+    } catch (_) { /* lecture bloquée par le navigateur */ }
     cardEl.classList.add('virus');
     const back = cardEl.querySelector('.card-face.back');
     const virusFace = cardEl.querySelector('.virus-face');
@@ -314,6 +336,18 @@ function onCardClick(e) {
   if (!card || !gameStarted || gameOver) return;
   const index = parseInt(card.dataset.index, 10);
   if (revealed[index]) return;
+  const safeAlready = revealed.filter((_, i) => grid[i] !== 'virus').length;
+  const thisCardIsSafe = grid[index] !== 'virus';
+  const isSixthSafeCard = thisCardIsSafe && safeAlready === 5;
+  try {
+    if (isSixthSafeCard) {
+      soundSafeStreak.currentTime = 0;
+      soundSafeStreak.play().catch(function() {});
+    } else {
+      soundCardClick.currentTime = 0;
+      soundCardClick.play().catch(function() {});
+    }
+  } catch (_) { /* lecture bloquée par le navigateur */ }
   revealCard(index);
 }
 
@@ -364,12 +398,95 @@ function initGame() {
     renderGrid();
   }
 
+  soundSafeStreak.load();
+  startBgMusic();
+  initSoundControl();
   updateUI();
   renderHistory();
+  initBackgroundParticles();
+}
+
+function initSoundControl() {
+  const panel = document.getElementById('sound-panel');
+  const toggle = document.getElementById('sound-toggle');
+  const musicSlider = document.getElementById('sound-music');
+  const sfxSlider = document.getElementById('sound-sfx');
+  if (!panel || !toggle || !musicSlider || !sfxSlider) return;
+
+  toggle.addEventListener('click', function() {
+    panel.classList.toggle('hidden');
+    toggle.textContent = panel.classList.contains('hidden') ? '🔇' : '🔊';
+  });
+
+  function applyMusicVolume() {
+    const v = Number(musicSlider.value) / 100;
+    bgMusic.volume = v;
+  }
+  function applySfxVolume() {
+    const v = Number(sfxSlider.value) / 100;
+    soundCardClick.volume = v;
+    soundVirusLose.volume = v;
+    soundSafeStreak.volume = v;
+  }
+
+  musicSlider.addEventListener('input', applyMusicVolume);
+  sfxSlider.addEventListener('input', applySfxVolume);
+  applyMusicVolume();
+  applySfxVolume();
+}
+
+function startBgMusic() {
+  bgMusic.load();
+  function tryPlay() {
+    bgMusic.play().catch(function() {});
+  }
+  tryPlay();
+  window.addEventListener('load', tryPlay);
+  document.body.addEventListener('click', function firstClick() {
+    tryPlay();
+    document.body.removeEventListener('click', firstClick);
+  }, { once: true });
+}
+
+// Particules lumineuses dynamiques sur le fond (cyberpunk)
+function initBackgroundParticles() {
+  const container = document.getElementById('bg-particles');
+  if (!container) return;
+  const colors = [
+    'rgba(34, 211, 238, 0.9)',
+    'rgba(192, 38, 211, 0.85)',
+    'rgba(232, 121, 249, 0.8)',
+    'rgba(34, 197, 94, 0.7)',
+    'rgba(139, 92, 246, 0.8)'
+  ];
+  for (let i = 0; i < 28; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'particle-dot';
+    dot.style.left = Math.random() * 100 + '%';
+    dot.style.top = Math.random() * 100 + '%';
+    dot.style.background = colors[Math.floor(Math.random() * colors.length)];
+    dot.style.animationDelay = (Math.random() * 2) + 's';
+    dot.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    container.appendChild(dot);
+  }
+}
+
+function hideSplash() {
+  const splash = document.getElementById('splash');
+  if (splash) {
+    splash.classList.add('hidden');
+    setTimeout(function() {
+      splash.remove();
+    }, 850);
+  }
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initGame);
+  document.addEventListener('DOMContentLoaded', function() {
+    initGame();
+    setTimeout(hideSplash, 4200);
+  });
 } else {
   initGame();
+  setTimeout(hideSplash, 4200);
 }
