@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SYSTEM BREACH — L'Infection</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="grid-bg"></div>
+
+  <!-- Overlay animation virus / hack (masqué par défaut) -->
+  <div class="virus-overlay" id="virus-overlay" aria-hidden="true">
+    <div class="virus-overlay-spread"></div>
+    <div class="virus-overlay-scanlines"></div>
+    <div class="virus-overlay-glitch"></div>
+    <div class="virus-overlay-pulse"></div>
+  </div>
+
+  <header class="player-info">
+    <div class="player-card">
+      <div class="avatar">👤</div>
+      <div class="player-details">
+        <span class="label">JOUEUR 1</span>
+        <span class="balance">Solde: <strong id="balance">100.00</strong> €</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="game-layout">
+    <!-- Panneau de contrôle (gauche) -->
+    <aside class="control-panel">
+      <h2 class="panel-title">CONTROL PANEL</h2>
+
+      <div class="control-group">
+        <label>MISE</label>
+        <div class="bet-amount" id="bet-display">10.00 €</div>
+        <div class="bet-controls">
+          <button type="button" class="btn-small" id="bet-minus" aria-label="Diminuer la mise">−</button>
+          <button type="button" class="btn-small" id="bet-plus" aria-label="Augmenter la mise">+</button>
+          <button type="button" class="btn-quick btn-quick-double" id="bet-double" title="x2">x2</button>
+          <button type="button" class="btn-quick" id="bet-half" title="//2">//2</button>
+        </div>
+        <input type="hidden" id="bet-input" value="10" />
+      </div>
+
+      <div class="control-group">
+        <label class="virus-label">NB D'EXPLOSIONS <span id="virus-count">(3)</span></label>
+        <div class="virus-range-labels">
+          <span>0/20</span>
+          <span id="virus-max">3/24</span>
+        </div>
+        <input type="range" id="virus-slider" min="1" max="24" value="3" class="virus-slider" />
+      </div>
+
+      <button type="button" class="btn-launch" id="btn-launch">LANCER</button>
+
+      <div class="control-group gains">
+        <label>GAINS ACTUELS</label>
+        <div class="gains-value" id="gains-display">0.00 €</div>
+      </div>
+
+      <button type="button" class="btn-cashout" id="btn-cashout" disabled>
+        CASH OUT<br /><span class="cashout-sub">ENCAISSER</span>
+      </button>
+    </aside>
+
+    <!-- Grille de jeu (centre) -->
+    <section class="game-area">
+      <div class="game-message-wrap" id="game-message-wrap">
+        <span class="game-message-blink game-message-blink-l"></span>
+        <span class="game-message-blink game-message-blink-r"></span>
+        <div class="game-message" id="game-message" aria-live="polite"></div>
+        <div class="game-message-sub" id="game-message-sub"></div>
+      </div>
+      <div class="grid-frame">
+        <div class="grid-container" id="grid-container" aria-label="Grille de 25 modules">
+          <!-- 25 cartes générées en JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Historique (droite) -->
+    <aside class="history-panel">
+      <h2 class="panel-title">HISTORY</h2>
+      <div class="history-list" id="history-list">
+        <p class="history-empty" id="history-empty">Aucun tour encore.</p>
+      </div>
+      <div class="history-progress">
+        <div class="progress-bar" id="history-progress"></div>
+        <span class="progress-star">◆</span>
+      </div>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
