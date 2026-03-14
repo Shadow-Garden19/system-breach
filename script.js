@@ -16,6 +16,7 @@ let revealed = [];       // booléen par index
 let currentMultiplier = 1;
 let gameStarted = false;
 let gameOver = false;
+let virusAnimationActive = false;  // true pendant l'animation virus → pas de clic carte ni cash out
 let history = [];
 
 // Éléments DOM
@@ -139,6 +140,10 @@ function showGridFaceDown() {
 const VIRUS_ANIMATION_DURATION_MS = 2200;
 
 function playVirusHackAnimation(virusCardEl) {
+  virusAnimationActive = true;
+  if (btnCashout) btnCashout.disabled = true;
+  document.body.classList.add('virus-display-active');
+
   const rect = virusCardEl.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
@@ -158,6 +163,8 @@ function playVirusHackAnimation(virusCardEl) {
   virusOverlay.classList.add('active');
 
   setTimeout(() => {
+    virusAnimationActive = false;
+    document.body.classList.remove('virus-display-active');
     virusOverlay.classList.remove('active');
     gridContainer.querySelectorAll('.card').forEach(card => {
       card.classList.remove('infected');
@@ -304,7 +311,7 @@ function endGame(won) {
 
 // Cash out
 function cashOut() {
-  if (gameOver || !gameStarted) return;
+  if (gameOver || !gameStarted || virusAnimationActive) return;
   const atLeastOneSafe = revealed.some((_, i) => grid[i] !== 'virus');
   if (!atLeastOneSafe) return;
   endGame(true);
@@ -333,7 +340,7 @@ function renderHistory() {
 // Clic sur une carte
 function onCardClick(e) {
   const card = e.target.closest('.card');
-  if (!card || !gameStarted || gameOver) return;
+  if (!card || !gameStarted || gameOver || virusAnimationActive) return;
   const index = parseInt(card.dataset.index, 10);
   if (revealed[index]) return;
   const safeAlready = revealed.filter((_, i) => grid[i] !== 'virus').length;

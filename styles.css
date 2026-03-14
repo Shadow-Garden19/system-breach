@@ -472,6 +472,12 @@ body {
   transition: opacity 0.15s ease-out, visibility 0s linear 0.15s;
 }
 
+/* Pendant l'affichage virus : aucun clic sur les cartes ni sur Cash out */
+body.virus-display-active .grid-container,
+body.virus-display-active .btn-cashout {
+  pointer-events: none;
+}
+
 .virus-overlay.active {
   opacity: 1;
   visibility: visible;
