@@ -52,6 +52,13 @@ const soundSafeStreak = new Audio('assets/safe-streak.mp3');
 const bgMusic = new Audio('assets/bg-music.mp3');
 bgMusic.loop = true;
 bgMusic.volume = 0.5;
+// Son de l'intro (splash)
+const introMusic = new Audio();
+introMusic.preload = 'auto';
+introMusic.volume = 0.8;
+introMusic.muted = false;
+introMusic.src = 'assets/intro-music.m4a';
+introMusic.load();
 // Mise à jour affichage solde et gains
 function updateUI() {
   if (balanceEl) balanceEl.textContent = balance.toFixed(2);
@@ -381,10 +388,19 @@ function initGame() {
     updateUI();
   });
 
+  function updateVirusSliderFill() {
+    if (virusSlider) {
+      const val = parseInt(virusSlider.value, 10);
+      const pct = ((val - 1) / 23) * 100;
+      virusSlider.style.setProperty('--virus-pct', String(pct));
+    }
+  }
   if (virusSlider) {
+    updateVirusSliderFill();
     virusSlider.addEventListener('input', () => {
       if (virusCountEl) virusCountEl.textContent = '(' + virusSlider.value + ')';
       if (virusMaxEl) virusMaxEl.textContent = virusSlider.value + '/24';
+      updateVirusSliderFill();
     });
   }
 
@@ -406,7 +422,6 @@ function initGame() {
   }
 
   soundSafeStreak.load();
-  startBgMusic();
   initSoundControl();
   updateUI();
   renderHistory();
@@ -479,21 +494,105 @@ function initBackgroundParticles() {
 }
 
 function hideSplash() {
+  if (introMusic) {
+    introMusic.pause();
+    introMusic.currentTime = 0;
+  }
+  startBgMusic();
   const splash = document.getElementById('splash');
   if (splash) {
     splash.classList.add('hidden');
     setTimeout(function() {
       splash.remove();
-    }, 850);
+    }, 900);
+  }
+}
+
+function createRisingLights() {
+  const container = document.getElementById('splash-rising-lights');
+  if (!container) return;
+  const colors = ['', 'cyan', 'magenta'];
+  for (let i = 0; i < 48; i++) {
+    const light = document.createElement('span');
+    light.className = 'rising-light ' + (colors[Math.floor(Math.random() * colors.length)]);
+    light.style.left = (Math.random() * 100) + '%';
+    light.style.animationDelay = (Math.random() * 6) + 's';
+    light.style.animationDuration = (4 + Math.random() * 3.5) + 's';
+    light.style.width = (5 + Math.random() * 8) + 'px';
+    light.style.height = light.style.width;
+    container.appendChild(light);
+  }
+}
+
+function initSplash() {
+  createRisingLights();
+  const logoImg = document.getElementById('splash-logo-img');
+  const fallback = document.getElementById('splash-logo-fallback');
+  const splash = document.getElementById('splash');
+
+  var introAlreadyStarted = false;
+  function tryPlayIntro() {
+    if (!introMusic || introAlreadyStarted) return;
+    introAlreadyStarted = true;
+    introMusic.muted = false;
+    introMusic.volume = 0.8;
+    introMusic.currentTime = 0;
+    var p = introMusic.play();
+    if (p && p.catch) p.catch(function() { introAlreadyStarted = false; });
+  }
+
+  function whenCanPlay(fn) {
+    if (introMusic.readyState >= 2) {
+      fn();
+    } else {
+      introMusic.addEventListener('canplay', fn, { once: true });
+      introMusic.addEventListener('canplaythrough', fn, { once: true });
+      introMusic.addEventListener('error', function() {
+        introMusic.src = 'assets/intro-music.mp3';
+        introMusic.load();
+        introMusic.addEventListener('canplay', fn, { once: true });
+      }, { once: true });
+    }
+  }
+
+  whenCanPlay(tryPlayIntro);
+
+  if (logoImg) {
+    logoImg.addEventListener('load', function() {
+      logoImg.classList.add('loaded');
+    });
+    logoImg.addEventListener('error', function() {
+      logoImg.style.display = 'none';
+      if (fallback) fallback.classList.add('active');
+    });
+    if (logoImg.complete && logoImg.naturalWidth > 0) {
+      logoImg.classList.add('loaded');
+    } else if (logoImg.complete) {
+      logoImg.style.display = 'none';
+      if (fallback) fallback.classList.add('active');
+    }
+  }
+
+  if (splash) {
+    setInterval(function() {
+      if (!splash.classList.contains('hidden')) {
+        splash.classList.add('glitch-active');
+        setTimeout(function() {
+          splash.classList.remove('glitch-active');
+        }, 280);
+      }
+    }, 2800 + Math.random() * 1800);
   }
 }
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
     initGame();
+    initSplash();
     setTimeout(hideSplash, 4200);
   });
 } else {
   initGame();
+  initSplash();
   setTimeout(hideSplash, 4200);
 }

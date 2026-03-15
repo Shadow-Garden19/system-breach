@@ -10,19 +10,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- Splash / chargement — AED company -->
+  <!-- Intro AED GAME STUDIOS — logo + effets cyberpunk plein écran -->
   <div class="splash" id="splash">
     <div class="splash-bg"></div>
+    <div class="splash-aurora" aria-hidden="true"></div>
+    <div class="splash-orbs" aria-hidden="true">
+      <span class="orb orb-1"></span><span class="orb orb-2"></span><span class="orb orb-3"></span><span class="orb orb-4"></span><span class="orb orb-5"></span>
+    </div>
     <div class="splash-rays"></div>
-    <div class="splash-scanlines"></div>
+    <div class="splash-rising-lights" aria-hidden="true" id="splash-rising-lights"></div>
+    <div class="splash-vignette" aria-hidden="true"></div>
+    <div class="splash-shards" aria-hidden="true">
+      <span class="shard shard-1"></span><span class="shard shard-2"></span><span class="shard shard-3"></span>
+      <span class="shard shard-4"></span><span class="shard shard-5"></span><span class="shard shard-6"></span>
+      <span class="shard shard-7"></span><span class="shard shard-8"></span><span class="shard shard-9"></span>
+      <span class="shard shard-10"></span><span class="shard shard-11"></span><span class="shard shard-12"></span>
+    </div>
+    <div class="splash-glitch" id="splash-glitch" aria-hidden="true"></div>
+    <div class="splash-noise"></div>
     <div class="splash-content">
-      <div class="splash-name-wrap">
-        <div class="splash-ring"></div>
-        <div class="splash-name">
-          <div class="splash-logo" aria-hidden="true">
+      <div class="splash-logo-wrap">
+        <div class="splash-logo-box">
+          <img src="assets/aed-logo.png" alt="AED GAME STUDIOS" class="splash-logo-img" id="splash-logo-img" />
+          <div class="splash-logo-fallback" id="splash-logo-fallback" aria-hidden="true">
             <span class="splash-a">A</span><span class="splash-e">E</span><span class="splash-d">D</span>
           </div>
-          <div class="splash-company">company</div>
+          <div class="splash-subtitle">GAME STUDIOS</div>
         </div>
       </div>
       <div class="splash-tagline">SYSTEM BREACH</div>
