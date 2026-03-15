@@ -24,6 +24,7 @@
   --game-max: min(480px, 88vw);
   --frame-max: min(520px, 92vw);
   --history-size: clamp(160px, 18vw, 200px);
+  --layout-gap: clamp(1rem, 2vw, 1.5rem);
 }
 
 * {
@@ -462,7 +463,7 @@ body {
   100% { background-position: 200% 0; }
 }
 
-/* ===== Fond : lounge / bar cyberpunk (image) + animations immersives ===== */
+/* ===== Fond : vidéo en boucle + animations immersives ===== */
 .grid-bg {
   position: fixed;
   inset: 0;
@@ -470,17 +471,48 @@ body {
   pointer-events: none;
   overflow: hidden;
   background-color: #0a0612;
-  background-image: url('assets/bg-lounge.png');
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  /* Zoom lent type "Ken Burns" pour donner de la profondeur */
-  animation: bg-zoom 20s ease-in-out infinite alternate;
+}
+
+/* Vidéo de fond en boucle — fixe, qualité optimale */
+.grid-bg .bg-video {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  /* Couche dédiée pour un rendu plus net */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 @keyframes bg-zoom {
   0% { transform: scale(1); }
   100% { transform: scale(1.08); }
+}
+
+/* Masque bas-droite : cache la zone des personnages dans la vidéo de fond */
+.grid-bg .bg-mask-bottom-right {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 42%;
+  height: 55%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(10, 6, 18, 0.4) 55%,
+    rgba(10, 6, 18, 0.92) 75%,
+    #0a0612 100%
+  );
 }
 
 /* Lueur verte au fond du couloir (respiration / énergie) */
@@ -846,14 +878,14 @@ body.virus-display-active .btn-cashout {
   color: var(--text);
 }
 
-/* Layout principal — espace à droite pour la bulle History, jeu centré entre les deux */
+/* Layout principal — control | gap | jeu | gap | history (même écart partout) */
 .game-layout {
   display: grid;
-  grid-template-columns: var(--panel-width) 1fr;
-  gap: clamp(1rem, 2vw, 1.5rem);
+  grid-template-columns: var(--panel-width) 1fr var(--history-size);
+  gap: var(--layout-gap);
   max-width: min(1200px, 98vw);
   margin: 0 auto;
-  padding: clamp(3rem, 6vw, 5rem) var(--space-right) clamp(1.5rem, 3vw, 2rem) var(--space-edge);
+  padding: clamp(3rem, 6vw, 5rem) var(--space-edge) clamp(1.5rem, 3vw, 2rem) var(--space-edge);
   position: relative;
   z-index: 1;
 }
@@ -894,13 +926,11 @@ body.virus-display-active .btn-cashout {
 }
 
 .history-panel {
-  position: fixed;
-  top: var(--space-edge);
-  right: var(--space-edge);
+  position: relative;
   z-index: 20;
-  width: var(--history-size);
-  height: var(--history-size);
+  width: 100%;
   min-width: 140px;
+  height: var(--history-size);
   min-height: 140px;
   background: linear-gradient(180deg, #252830 0%, #1e2128 50%, #252830 100%);
   border: 2px solid #e879f9;
@@ -1949,9 +1979,7 @@ body.virus-display-active .btn-cashout {
   }
 
   .history-panel {
-    top: var(--space-edge);
-    right: var(--space-edge);
-    width: var(--history-size);
+    width: 100%;
     height: var(--history-size);
     padding: clamp(0.5rem, 1vw, 0.7rem);
   }

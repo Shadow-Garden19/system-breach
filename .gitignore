@@ -12,3 +12,6 @@ desktop.ini
 # Logs
 *.log
 npm-debug.log*
+
+# Vidéos lourdes (limite GitHub 100 Mo)
+assets/bg-video.mp4

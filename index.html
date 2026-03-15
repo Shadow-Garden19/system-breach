@@ -46,13 +46,18 @@
   </div>
 
   <div class="scanlines"></div>
-  <!-- Fond : image du couloir cyberpunk + calques animés -->
+  <!-- Fond : vidéo en boucle + calques animés -->
   <div class="grid-bg" id="grid-bg" aria-hidden="true">
+    <video class="bg-video" autoplay muted loop playsinline aria-hidden="true">
+      <source src="assets/bg-video.mp4" type="video/mp4" />
+    </video>
     <div class="bg-glow-green"></div>
     <div class="bg-fog"></div>
     <div class="bg-particles" aria-hidden="true" id="bg-particles"></div>
     <div class="bg-violet-pulse"></div>
     <div class="bg-floor-shimmer"></div>
+    <!-- Masque bas-droite : cache le trio de personnages dans la vidéo -->
+    <div class="bg-mask-bottom-right" aria-hidden="true"></div>
   </div>
 
   <!-- Overlay animation virus / hack (masqué par défaut) -->
@@ -128,8 +133,8 @@
       </div>
     </section>
 
-    <!-- Historique (droite) -->
-    <aside class="history-panel">
+    <!-- Historique (droite) — masqué à la demande -->
+    <aside class="history-panel" id="history-panel" aria-hidden="true" hidden>
       <h2 class="panel-title">HISTORY</h2>
       <div class="history-list" id="history-list">
         <p class="history-empty" id="history-empty">Aucun tour encore.</p>
