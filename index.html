@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>SYSTEM BREACH — L'Infection</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -81,8 +81,6 @@
   <main class="game-layout">
     <!-- Panneau de contrôle (gauche) -->
     <aside class="control-panel">
-      <h2 class="panel-title">CONTROL PANEL</h2>
-
       <div class="control-group">
         <label>MISE</label>
         <div class="bet-amount" id="bet-display">10.00 €</div>
@@ -116,15 +114,34 @@
       <button type="button" class="btn-cashout" id="btn-cashout" disabled>
         CASH OUT<br /><span class="cashout-sub">ENCAISSER</span>
       </button>
+
+      <div class="auto-cashout-wrap" id="auto-cashout-wrap">
+        <label class="auto-cashout-label">
+          <input type="checkbox" id="auto-cashout-toggle" class="auto-cashout-checkbox" />
+          <span class="auto-cashout-text">AUTO CASHOUT</span>
+        </label>
+        <div class="auto-cashout-input-wrap">
+          <span class="auto-cashout-prefix">x</span>
+          <input type="number" id="auto-cashout-value" class="auto-cashout-input" min="1.1" max="100" step="0.1" value="2.0" disabled />
+        </div>
+      </div>
     </aside>
 
     <!-- Grille de jeu (centre) -->
     <section class="game-area">
+      <!-- Bandeau explosion (virus) -->
       <div class="game-message-wrap" id="game-message-wrap">
         <span class="game-message-blink game-message-blink-l"></span>
         <span class="game-message-blink game-message-blink-r"></span>
         <div class="game-message" id="game-message" aria-live="polite"></div>
         <div class="game-message-sub" id="game-message-sub"></div>
+      </div>
+      <!-- Bandeau encaissement réussi (cash out) — élément séparé pour affichage garanti -->
+      <div class="game-message-wrap game-message-wrap-success" id="game-message-wrap-success">
+        <span class="game-message-blink game-message-blink-l"></span>
+        <span class="game-message-blink game-message-blink-r"></span>
+        <div class="game-message" id="game-message-success" aria-live="polite">Encaissement réussi !</div>
+        <div class="game-message-sub" id="game-message-sub-success"></div>
       </div>
       <div class="grid-frame">
         <div class="grid-container" id="grid-container" aria-label="Grille de 25 modules">
@@ -133,16 +150,16 @@
       </div>
     </section>
 
-    <!-- Historique (droite) — masqué à la demande -->
-    <aside class="history-panel" id="history-panel" aria-hidden="true" hidden>
-      <h2 class="panel-title">HISTORY</h2>
-      <div class="history-list" id="history-list">
-        <p class="history-empty" id="history-empty">Aucun tour encore.</p>
-      </div>
-      <div class="history-progress">
-        <div class="progress-bar" id="history-progress"></div>
-        <span class="progress-star">◆</span>
-      </div>
+    <!-- Boutons droite (Auto Play + Info) -->
+    <aside class="side-buttons">
+      <button type="button" class="btn-side btn-autoplay" id="btn-autoplay" aria-label="Auto Play">
+        <span class="btn-side-icon">▶▶</span>
+        <span class="btn-side-label">AUTO</span>
+      </button>
+      <button type="button" class="btn-side btn-info" id="btn-info" aria-label="Informations">
+        <span class="btn-side-icon">ℹ</span>
+        <span class="btn-side-label">INFO</span>
+      </button>
     </aside>
   </main>
 
@@ -162,6 +179,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>

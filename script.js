@@ -1,3 +1,18 @@
+import {
+  authenticate,
+  isDemoMode,
+  isReplayMode,
+  fetchReplayEvent,
+  getBalance as getRgsBalance,
+  formatCurrency,
+  getReplayAmount,
+  getReplayMode,
+  getReplayEventId,
+  play as rgsPlay,
+  endRound as rgsEndRound,
+  betEvent as rgsBetEvent
+} from './rgs-client.js';
+
 /**
  * SYSTEM BREACH — L'Infection
  * Logique du jeu : grille 5x5, virus, multiplicateurs, cash out.
@@ -6,18 +21,22 @@
 const GRID_SIZE = 25;
 const ROWS = 5;
 const COLS = 5;
+const RGS_CARD_PATH_BET = 0.01; // chemin play→end par carte, sans impacter l'UI
 
 // État du jeu
-let balance = 100;
+let balance = 0;
 let currentBet = 10;
 let virusCount = 3;
 let grid = [];           // 'virus' | number (multiplicateur)
 let revealed = [];       // booléen par index
 let currentMultiplier = 1;
+let stakeInPlay = 0;     // GAINS ACTUELS (cagnotte en jeu)
 let gameStarted = false;
 let gameOver = false;
-let virusAnimationActive = false;  // true pendant l'animation virus → pas de clic carte ni cash out
+let virusAnimationActive = false;
 let history = [];
+let rgsClickBusy = false;         // verrou pendant un cycle play→endRound
+let autoplayActive = false;      // mode auto : lance, révèle les cartes, cash out au seuil
 
 // Éléments DOM
 const balanceEl = document.getElementById('balance');
@@ -31,6 +50,9 @@ const virusCountEl = document.getElementById('virus-count');
 const btnLaunch = document.getElementById('btn-launch');
 const gainsDisplay = document.getElementById('gains-display');
 const btnCashout = document.getElementById('btn-cashout');
+const autoCashoutToggle = document.getElementById('auto-cashout-toggle');
+const autoCashoutValue = document.getElementById('auto-cashout-value');
+const btnAutoplay = document.getElementById('btn-autoplay');
 const gameMessage = document.getElementById('game-message');
 const gridContainer = document.getElementById('grid-container');
 const historyList = document.getElementById('history-list');
@@ -40,6 +62,7 @@ const virusOverlay = document.getElementById('virus-overlay');
 const betDisplay = document.getElementById('bet-display');
 const gameMessageWrap = document.getElementById('game-message-wrap');
 const gameMessageSub = document.getElementById('game-message-sub');
+const gameMessageWrapSuccess = document.getElementById('game-message-wrap-success');
 const virusMaxEl = document.getElementById('virus-max');
 
 // Son joué quand le joueur clique sur une carte virus (défaite)
@@ -63,8 +86,15 @@ introMusic.load();
 function updateUI() {
   if (balanceEl) balanceEl.textContent = balance.toFixed(2);
   const bet = Number(betInput && betInput.value) || 10;
-  if (betDisplay) betDisplay.textContent = bet.toFixed(2) + ' €';
-  if (gainsDisplay) gainsDisplay.textContent = (currentBet * currentMultiplier).toFixed(2) + ' €';
+  // Pendant la partie, le joueur "joue" avec la cagnotte (gains actuels),
+  // pas avec la mise initiale. On l'affiche aussi dans le bloc "MISE".
+  if (betDisplay) {
+    const shownBet = gameStarted ? stakeInPlay : bet;
+    betDisplay.textContent = shownBet.toFixed(2) + ' €';
+  }
+  if (gainsDisplay) {
+    gainsDisplay.textContent = (gameStarted ? stakeInPlay : 0).toFixed(2) + ' €';
+  }
   if (virusMaxEl && virusSlider) virusMaxEl.textContent = virusSlider.value + '/24';
 }
 
@@ -186,22 +216,48 @@ function playVirusHackAnimation(virusCardEl) {
   }, VIRUS_ANIMATION_DURATION_MS);
 }
 
+// Cycle invisible : play → endRound (vrai débit RGS)
+async function rgsInvisibleRound(betAmount) {
+  const resp = await rgsPlay(betAmount, 'base');
+  const active = !!resp?.round?.active;
+  if (active) {
+    try { await rgsEndRound(); } catch (_) {}
+  }
+  return resp;
+}
+
 // Révèle une carte (multiplicateur ou virus)
-function revealCard(index) {
-  if (!gridContainer || revealed[index] || gameOver) return;
+// En mode RGS : chaînage invisible — chaque carte = play → endRound en arrière-plan
+async function revealCard(index) {
+  if (!gridContainer || revealed[index] || gameOver || rgsClickBusy) return;
   const cardEl = gridContainer.children[index];
   if (!cardEl) return;
   const value = grid[index];
   if (value === undefined) return;
 
+  const useRgs = !isDemoMode() && !isReplayMode();
+
+  // --- Chemin invisible par carte : play → end ---
+  // Ce chemin ne doit JAMAIS modifier le solde principal affiché pendant la partie.
+  if (useRgs) {
+    rgsClickBusy = true;
+    try {
+      // On envoie un petit montant constant pour garder le chemin côté RGS
+      // sans que l'UI du solde principal suive les micro-débits/crédits.
+      await rgsInvisibleRound(RGS_CARD_PATH_BET);
+    } catch (err) {
+      rgsClickBusy = false;
+      return;
+    }
+    rgsClickBusy = false;
+  }
+
+  // --- Révélation visuelle (identique demo / RGS) ---
   revealed[index] = true;
   cardEl.classList.add('revealed');
 
   if (value === 'virus') {
-    try {
-      soundVirusLose.currentTime = 0;
-      soundVirusLose.play();
-    } catch (_) { /* lecture bloquée par le navigateur */ }
+    try { soundVirusLose.currentTime = 0; soundVirusLose.play(); } catch (_) {}
     cardEl.classList.add('virus');
     const back = cardEl.querySelector('.card-face.back');
     const virusFace = cardEl.querySelector('.virus-face');
@@ -220,6 +276,8 @@ function revealCard(index) {
   }
 
   currentMultiplier *= value;
+  // La somme en jeu est remisée à chaque carte saine.
+  stakeInPlay = stakeInPlay * value;
   const back = cardEl.querySelector('.card-face.back');
   const front = cardEl.querySelector('.card-face.front');
   if (back) back.style.display = 'none';
@@ -237,9 +295,18 @@ function revealCard(index) {
 
   updateUI();
   if (btnCashout) btnCashout.disabled = false;
+
+  if (autoCashoutToggle && autoCashoutToggle.checked && autoCashoutValue) {
+    const target = parseFloat(autoCashoutValue.value) || 2;
+    if (currentMultiplier >= target) {
+      cashOut();
+      return;
+    }
+  }
 }
 
-// Démarre une nouvelle partie (verrouille la grille)
+// Démarre une nouvelle partie
+// PAS d'appel RGS ici — les rounds invisibles se font sur chaque carte
 function startRound() {
   const betVal = Number(betInput && betInput.value) || 10;
   const bet = Math.max(0.01, Math.min(balance, betVal));
@@ -256,18 +323,26 @@ function startRound() {
   virusCount = Math.max(1, Math.min(24, Number(virusSlider && virusSlider.value) || 3));
   if (virusCountEl) virusCountEl.textContent = '(' + virusCount + ')';
 
+  // 2 soldes:
+  // - balance = solde principal
+  // - stakeInPlay = gains actuels (cagnotte)
+  // Au lancement on transfère la mise: balance → gains actuels.
+  balance -= currentBet;
+  stakeInPlay = currentBet;
+
   grid = buildGrid();
   revealed = new Array(GRID_SIZE).fill(false);
   currentMultiplier = 1;
   gameStarted = true;
   gameOver = false;
+  rgsClickBusy = false;
 
-  balance -= currentBet;
   updateUI();
   if (gameMessage) gameMessage.textContent = '';
   if (gameMessageSub) gameMessageSub.textContent = '';
   if (gameMessage) gameMessage.className = 'game-message';
   if (gameMessageWrap) gameMessageWrap.classList.remove('visible', 'infection');
+  if (gameMessageWrapSuccess) gameMessageWrapSuccess.classList.remove('visible');
   if (btnLaunch) btnLaunch.disabled = true;
   if (btnCashout) btnCashout.disabled = true;
 
@@ -279,10 +354,57 @@ function startRound() {
   }
 }
 
+// Révèle automatiquement une carte au hasard (autoplay)
+const AUTOPLAY_REVEAL_DELAY_MS = 550;
+async function autoRevealNext() {
+  if (!autoplayActive || !gameStarted || gameOver || virusAnimationActive || rgsClickBusy) return;
+  const unrevealed = [];
+  for (let i = 0; i < GRID_SIZE; i++) {
+    if (!revealed[i]) unrevealed.push(i);
+  }
+  if (unrevealed.length === 0) return;
+  const index = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+  try {
+    soundCardClick.currentTime = 0;
+    soundCardClick.play().catch(function() {});
+  } catch (_) {}
+  await revealCard(index);
+  if (!autoplayActive || gameOver) return;
+  if (gameStarted && !virusAnimationActive) {
+    setTimeout(autoRevealNext, AUTOPLAY_REVEAL_DELAY_MS);
+  }
+}
+
+// Programme le prochain round en mode autoplay
+function scheduleNextAutoplayRound(won) {
+  if (!autoplayActive) return;
+  const delay = won ? 1400 : (VIRUS_ANIMATION_DURATION_MS + 900);
+  setTimeout(() => {
+    if (!autoplayActive) return;
+    const betVal = Number(betInput && betInput.value) || 10;
+    if (balance < betVal) {
+      autoplayActive = false;
+      if (btnAutoplay) btnAutoplay.classList.remove('autoplay-on');
+      return;
+    }
+    startRound();
+    setTimeout(autoRevealNext, 700);
+  }, delay);
+}
+
+function updateAutoplayButton() {
+  if (btnAutoplay) {
+    btnAutoplay.classList.toggle('autoplay-on', autoplayActive);
+    btnAutoplay.setAttribute('aria-pressed', autoplayActive ? 'true' : 'false');
+  }
+}
+
 // Fin de partie (infection ou cash out)
+// Pas d'appel RGS : chaque round invisible est déjà settlé dans revealCard
 function endGame(won) {
   gameOver = true;
   gameStarted = false;
+  rgsClickBusy = false;
   if (btnLaunch) btnLaunch.disabled = false;
   if (btnCashout) btnCashout.disabled = true;
 
@@ -292,36 +414,37 @@ function endGame(won) {
     });
   }
 
+  if (autoplayActive) scheduleNextAutoplayRound(won);
+
   if (won) {
-    const winnings = currentBet * currentMultiplier;
+    // Cashout: on retransfère la cagnotte vers le solde principal.
+    const winnings = stakeInPlay;
     balance += winnings;
     history.unshift({ mult: currentMultiplier, win: winnings });
     if (history.length > 20) history.pop();
     renderHistory();
-    gameMessage.textContent = 'Encaissement réussi !';
-    gameMessageSub.textContent = '';
-    gameMessage.className = 'game-message';
-    if (gameMessageWrap) {
-      gameMessageWrap.classList.add('visible');
-      gameMessageWrap.classList.remove('infection');
-    }
+    if (gameMessageWrap) gameMessageWrap.classList.remove('visible', 'infection');
+    if (gameMessageWrapSuccess) gameMessageWrapSuccess.classList.add('visible');
   } else {
-    if (gameMessageWrap) {
-      gameMessageWrap.classList.add('visible', 'infection');
+    if (gameMessageWrapSuccess) gameMessageWrapSuccess.classList.remove('visible');
+    if (gameMessageWrap) gameMessageWrap.classList.add('visible', 'infection');
+    if (gameMessage) {
+      gameMessage.textContent = 'EXPLOSION ! PERDU !';
+      gameMessage.className = 'game-message infection';
     }
-    gameMessage.textContent = 'EXPLOSION ! PERDU !';
-    gameMessageSub.textContent = 'VOUS AVEZ PERDU LA MISE';
-    gameMessage.className = 'game-message infection';
+    if (gameMessageSub) gameMessageSub.textContent = 'VOUS AVEZ PERDU LA MISE';
   }
+  // Fin de round: la cagnotte est terminée (cashout ou perdu)
+  stakeInPlay = 0;
   updateUI();
 }
 
 // Cash out
 function cashOut() {
   if (gameOver || !gameStarted || virusAnimationActive) return;
-  const atLeastOneSafe = revealed.some((_, i) => grid[i] !== 'virus');
-  if (!atLeastOneSafe) return;
-  endGame(true);
+  const atLeastOneSafeRevealed = revealed.some((isRevealed, i) => isRevealed && grid[i] !== 'virus');
+  if (!atLeastOneSafeRevealed) return;
+  endGame(true); // async: endRound + refresh balance en mode RGS
 }
 
 // Historique
@@ -347,7 +470,7 @@ function renderHistory() {
 // Clic sur une carte
 function onCardClick(e) {
   const card = e.target.closest('.card');
-  if (!card || !gameStarted || gameOver || virusAnimationActive) return;
+  if (!card || !gameStarted || gameOver || virusAnimationActive || rgsClickBusy) return;
   const index = parseInt(card.dataset.index, 10);
   if (revealed[index]) return;
   const safeAlready = revealed.filter((_, i) => grid[i] !== 'virus').length;
@@ -361,7 +484,7 @@ function onCardClick(e) {
       soundCardClick.currentTime = 0;
       soundCardClick.play().catch(function() {});
     }
-  } catch (_) { /* lecture bloquée par le navigateur */ }
+  } catch (_) {}
   revealCard(index);
 }
 
@@ -415,6 +538,37 @@ function initGame() {
 
   if (btnLaunch) btnLaunch.addEventListener('click', startRound);
   if (btnCashout) btnCashout.addEventListener('click', cashOut);
+
+  if (autoCashoutToggle) {
+    autoCashoutToggle.addEventListener('change', () => {
+      if (autoCashoutValue) autoCashoutValue.disabled = !autoCashoutToggle.checked;
+    });
+  }
+
+  if (btnAutoplay) {
+    btnAutoplay.addEventListener('click', () => {
+      autoplayActive = !autoplayActive;
+      updateAutoplayButton();
+      if (autoplayActive) {
+        if (!autoCashoutToggle || !autoCashoutToggle.checked) {
+          if (autoCashoutToggle) autoCashoutToggle.checked = true;
+          if (autoCashoutValue) autoCashoutValue.disabled = false;
+        }
+        const betVal = Number(betInput && betInput.value) || 10;
+        if (balance < betVal) {
+          autoplayActive = false;
+          updateAutoplayButton();
+          return;
+        }
+        if (!gameStarted) {
+          startRound();
+          setTimeout(autoRevealNext, 700);
+        } else {
+          setTimeout(autoRevealNext, 300);
+        }
+      }
+    });
+  }
 
   if (gridContainer) {
     gridContainer.addEventListener('click', onCardClick);
@@ -585,14 +739,54 @@ function initSplash() {
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    initGame();
-    initSplash();
-    setTimeout(hideSplash, 4200);
-  });
-} else {
-  initGame();
+async function initRgsIntegration() {
+  try {
+    const auth = await authenticate();
+
+    if (isReplayMode()) {
+      // Mode REPLAY : on affiche les infos de la mise rejouée
+      const replayAmount = getReplayAmount();
+      const replayMode = getReplayMode();
+      const replayEventId = getReplayEventId();
+      balance = getRgsBalance() || 0;
+      if (betInput) betInput.value = replayAmount.toFixed(2);
+      if (gameMessage) {
+        gameMessage.textContent = 'MODE REPLAY';
+      }
+      if (gameMessageSub) {
+        gameMessageSub.textContent = `Event ${replayEventId} — mode ${replayMode}`;
+      }
+    } else {
+      // Mode réel ou démo : on récupère le solde depuis le RGS client
+      const rgsBal = getRgsBalance();
+      if (typeof rgsBal === 'number' && rgsBal > 0) {
+        balance = rgsBal;
+      } else if (auth && typeof auth.balance === 'number') {
+        // auth.balance est en micro-unités
+        balance = auth.balance / 1000000;
+      } else {
+        // Fallback si aucune info : même comportement qu’avant
+        balance = 100;
+      }
+    }
+  } catch (e) {
+    // Si le RGS n’est pas configuré, on reste en pur mode démo local
+    balance = 100;
+  }
+
+  updateUI();
+}
+
+function boot() {
   initSplash();
+  initRgsIntegration().then(() => {
+    initGame();
+  });
   setTimeout(hideSplash, 4200);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
 }

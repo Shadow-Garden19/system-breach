@@ -1,5 +1,7 @@
 /* ===== SYSTEM BREACH — Design refait comme sur l'image ===== */
 :root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
   --bg-dark: #0c0e1a;
   --bg-panel: #1a1d2e;
   --bg-metallic: #252830;
@@ -20,10 +22,10 @@
   /* Unités fluides pour que les éléments suivent au zoom / redimensionnement */
   --space-edge: clamp(0.75rem, 2vw, 1.5rem);
   --space-right: clamp(12rem, 18vw, 220px);
-  --panel-width: clamp(220px, 22vw, 280px);
-  --game-max: min(480px, 88vw);
-  --frame-max: min(520px, 92vw);
-  --history-size: clamp(160px, 18vw, 200px);
+  --panel-width: clamp(200px, 20vw, 250px);
+  --game-max: min(470px, 85vw);
+  --frame-max: min(510px, 89vw);
+  --history-size: clamp(80px, 7vw, 100px);
   --layout-gap: clamp(1rem, 2vw, 1.5rem);
 }
 
@@ -37,8 +39,8 @@ body {
   font-family: 'Orbitron', 'Share Tech Mono', sans-serif;
   background: var(--bg-dark);
   color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100vh;
+  overflow: hidden;
   position: relative;
 }
 
@@ -885,7 +887,7 @@ body.virus-display-active .btn-cashout {
   gap: var(--layout-gap);
   max-width: min(1200px, 98vw);
   margin: 0 auto;
-  padding: clamp(3rem, 6vw, 5rem) var(--space-edge) clamp(1.5rem, 3vw, 2rem) var(--space-edge);
+  padding: clamp(2rem, 4vw, 3.5rem) var(--space-edge) clamp(1.5rem, 3vw, 2rem) var(--space-edge);
   position: relative;
   z-index: 1;
 }
@@ -897,6 +899,7 @@ body.virus-display-active .btn-cashout {
 /* CONTROL PANEL — réplique image : métal brossé, bordure violet/bleu alternée */
 .control-panel {
   min-width: 0;
+  margin-top: 7.5vh;
   background:
     linear-gradient(105deg, rgba(0,0,0,0.03) 0%, transparent 50%, rgba(0,0,0,0.04) 100%),
     linear-gradient(180deg, #2d3139 0%, #252830 15%, #1e2128 50%, #252830 85%, #2d3139 100%);
@@ -925,24 +928,77 @@ body.virus-display-active .btn-cashout {
   box-shadow: inset 0 0 16px rgba(0,0,0,0.15);
 }
 
-.history-panel {
-  position: relative;
-  z-index: 20;
-  width: 100%;
-  min-width: 140px;
-  height: var(--history-size);
-  min-height: 140px;
-  background: linear-gradient(180deg, #252830 0%, #1e2128 50%, #252830 100%);
-  border: 2px solid #e879f9;
-  border-radius: 16px;
-  padding: clamp(0.5rem, 1vw, 0.85rem);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.04),
-    0 0 0 1px rgba(232, 121, 249, 0.5),
-    0 0 20px rgba(232, 121, 249, 0.35),
-    0 0 40px rgba(192, 38, 211, 0.12),
-    0 4px 20px rgba(0,0,0,0.3);
+.history-panel { display: none; }
+
+.side-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  align-self: start;
+  gap: 1rem;
+  padding-top: 3rem;
+  margin-left: 0;
+  margin-right: 0;
 }
+
+.btn-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: clamp(60px, 5vw, 80px);
+  height: clamp(60px, 5vw, 80px);
+  border-radius: 16px;
+  border: 2px solid rgba(34, 211, 238, 0.6);
+  background: linear-gradient(180deg, #2d3139 0%, #1e2128 50%, #2d3139 100%);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 0 0 1px rgba(139, 92, 246, 0.3),
+    0 0 20px rgba(34, 211, 238, 0.2),
+    0 0 40px rgba(232, 121, 249, 0.1),
+    0 4px 16px rgba(0,0,0,0.4);
+}
+
+.btn-side:hover {
+  border-color: #22d3ee;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.6),
+    0 0 30px rgba(34, 211, 238, 0.4),
+    0 0 50px rgba(232, 121, 249, 0.2),
+    0 4px 20px rgba(0,0,0,0.5);
+  transform: scale(1.05);
+}
+
+.btn-side:active {
+  transform: scale(0.95);
+}
+
+.btn-side-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #22d3ee;
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+}
+
+.btn-side-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text);
+  margin-top: 0.3rem;
+}
+
+.btn-autoplay .btn-side-icon { color: #22c55e; text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
+.btn-autoplay { border-color: rgba(34, 197, 94, 0.5); }
+.btn-autoplay:hover { border-color: #22c55e; box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.3), 0 4px 20px rgba(0,0,0,0.5); }
+.btn-autoplay.autoplay-on { border-color: #22c55e; box-shadow: 0 0 12px rgba(34, 197, 94, 0.8), inset 0 0 12px rgba(34, 197, 94, 0.2); }
+
+.btn-info .btn-side-icon { color: #e879f9; text-shadow: 0 0 10px rgba(232, 121, 249, 0.5); }
+.btn-info { border-color: rgba(232, 121, 249, 0.5); }
+.btn-info:hover { border-color: #e879f9; box-shadow: 0 0 0 1px rgba(232, 121, 249, 0.6), 0 0 30px rgba(232, 121, 249, 0.3), 0 4px 20px rgba(0,0,0,0.5); }
 
 .panel-title {
   font-family: 'Orbitron', sans-serif;
@@ -1280,6 +1336,99 @@ body.virus-display-active .btn-cashout {
   margin-top: 0.15rem;
 }
 
+.auto-cashout-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.auto-cashout-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.auto-cashout-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(34, 211, 238, 0.6);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.auto-cashout-checkbox:checked {
+  background: rgba(34, 211, 238, 0.3);
+  border-color: #22d3ee;
+}
+
+.auto-cashout-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #22d3ee;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.auto-cashout-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.auto-cashout-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  width: 80%;
+}
+
+.auto-cashout-prefix {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #22d3ee;
+}
+
+.auto-cashout-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  width: 100%;
+  text-align: center;
+}
+
+.auto-cashout-input:disabled {
+  opacity: 0.4;
+}
+
+.auto-cashout-input::-webkit-inner-spin-button,
+.auto-cashout-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .gains {
   text-align: center;
 }
@@ -1304,11 +1453,11 @@ body.virus-display-active .btn-cashout {
   width: 100%;
 }
 
-/* Bandeau alerte PERDU — rouge translucide, deux lignes, balises clignotantes */
+/* Bandeau alerte PERDU — rouge translucide (explosion / virus) */
 .game-message-wrap {
-  width: 100%;
+  width: 75%;
   max-width: var(--game-max);
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
   padding: 0.75rem 1.5rem;
   background: rgba(239, 68, 68, 0.25);
   border: 1px solid rgba(239, 68, 68, 0.5);
@@ -1319,24 +1468,43 @@ body.virus-display-active .btn-cashout {
 }
 
 .game-message-wrap.visible {
-  display: block;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 2.5em !important;
 }
 
-.game-message-wrap.visible:not(.infection) {
-  background: rgba(34, 197, 94, 0.2);
-  border-color: rgba(34, 197, 94, 0.5);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+/* Bandeau vert ENCAISSEMENT RÉUSSI — même type que explosion, élément dédié pour affichage garanti */
+.game-message-wrap-success {
+  display: none !important;
+  width: 75%;
+  max-width: var(--game-max);
+  margin-bottom: 1.2rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(34, 197, 94, 0.3);
+  border: 2px solid rgba(34, 197, 94, 0.8);
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.3);
 }
 
-.game-message-wrap.visible:not(.infection) .game-message {
-  color: var(--card-mult-green);
-  text-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+.game-message-wrap-success.visible {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 2.5em !important;
 }
 
-.game-message-wrap.visible:not(.infection) .game-message-blink {
-  background: var(--card-mult-green);
+.game-message-wrap-success .game-message {
+  color: #22c55e;
+  text-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+}
+
+.game-message-wrap-success .game-message-blink {
+  background: #22c55e;
   animation: none;
-  opacity: 0.6;
+  opacity: 1;
+  box-shadow: 0 0 10px #22c55e;
 }
 
 .game-message-blink {
@@ -1851,7 +2019,7 @@ body.virus-display-active .btn-cashout {
 .sound-control {
   position: fixed;
   bottom: var(--space-edge);
-  left: var(--space-edge);
+  right: var(--space-edge);
   z-index: 50;
   display: flex;
   align-items: flex-end;
@@ -1961,26 +2129,416 @@ body.virus-display-active .btn-cashout {
     inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+/* =================================================================
+   RESPONSIVE — Stake testing viewports (rien ne disparait)
+   Desktop  1200×675   Laptop  1024×576
+   Popout L  800×450   Popout S  400×225
+   Mobile L  425×812   Mobile M  375×667   Mobile S  320×568
+   ================================================================= */
+
+/* --- Laptop (1024×576) --- */
+@media (max-width: 1100px) {
+  :root {
+    --panel-width: 20vw;
+    --history-size: 8vw;
+    --game-max: 78vh;
+    --frame-max: 82vh;
+    --layout-gap: 0.4vw;
+  }
+  .game-layout {
+    padding: 0 2vw;
+    max-width: 100%;
+    height: 100vh;
+    align-items: center;
+  }
+  .player-info { top: 2.5vh; left: 2.5vw; }
+  .avatar { width: 5.5vh; height: 5.5vh; font-size: 2.8vh; }
+  .player-details .label { font-size: 2.4vh; }
+  .balance { font-size: 3vh; }
+  .player-card { padding: 0.8vh 1.2vh; gap: 0.8vh; border-radius: 1.5vh; }
+  .control-panel {
+    padding: 2.2vh 1.2vw;
+    border-radius: 2vh;
+    align-self: center;
+  }
+  .control-panel::before { inset: 2px; border-radius: 1.8vh; }
+  .panel-title { font-size: 2.8vh; margin-bottom: 1.2vh; }
+  .control-group { margin-bottom: 1.2vh; }
+  .control-group label { font-size: 2.4vh; margin-bottom: 0.5vh; }
+  .bet-amount { font-size: 4.2vh; padding: 1.2vh 1.4vh; margin-bottom: 1vh; border-radius: 1.4vh; }
+  .bet-controls { gap: 0.6vh; }
+  .btn-small { width: 6vh; height: 6vh; font-size: 3vh; border-radius: 1.2vh; }
+  .btn-quick { padding: 0.8vh; font-size: 2.4vh; }
+  .virus-control .virus-label { font-size: 2.4vh; margin-bottom: 0.6vh; }
+  .virus-label span { font-size: 3vh; }
+  .virus-bar-wrap { padding: 1vh 1.2vh; border-radius: 1.2vh; }
+  .virus-slider { height: 2.2vh; }
+  .virus-slider::-webkit-slider-runnable-track { height: 2.2vh; }
+  .virus-slider::-moz-range-track { height: 2.2vh; }
+  .virus-slider::-webkit-slider-thumb { width: 4vh; height: 4vh; margin-top: -1vh; }
+  .virus-slider::-moz-range-thumb { width: 4vh; height: 4vh; }
+  .virus-range-labels { font-size: 2vh; }
+  .virus-range-labels #virus-max { font-size: 2.6vh; }
+  .btn-launch, .btn-cashout { padding: 1.8vh; font-size: 2.8vh; letter-spacing: 0.12em; margin-bottom: 1.2vh; border-radius: 1.6vh; }
+  .cashout-sub { font-size: 2vh; }
+  .gains-value { font-size: 4vh; }
+  .gains label { font-size: 2.4vh; }
+  .grid-frame { padding: 1.2vh; max-width: none; width: 76vh; }
+  .grid-container { gap: 1vh; max-width: none; width: 72vh; height: 72vh; }
+  .game-area { min-height: auto; width: 100%; }
+  .game-message { font-size: 1rem; }
+  .game-message-wrap,
+  .game-message-wrap-success { padding: 0.6rem 1.2rem; margin-bottom: 3vh; border-radius: 8px; max-width: 72vh; width: 72vh; }
+  .game-message-wrap-success.visible { display: block !important; }
+  .game-message-sub { font-size: 0.75rem; }
+  .card .lock-icon svg { width: 5.5vh; height: 5.5vh; }
+  .multiplier { font-size: 3vh; }
+  .side-buttons { gap: 2vh; padding-top: 3vh; align-self: start; justify-self: center; }
+  .btn-side { width: 9vh; height: 9vh; border-radius: 2vh; }
+  .btn-side-icon { font-size: 3.2vh; }
+  .btn-side-label { font-size: 1.8vh; margin-top: 0.4vh; }
+  .sound-control { bottom: 1vh; right: 2.5vw; }
+  .sound-control-toggle { width: 6vh; height: 6vh; font-size: 3vh; }
+  .splash-logo-img { max-width: min(500px, 80vw); max-height: 220px; }
+  .splash-logo-fallback { font-size: clamp(3.5rem, 16vw, 7rem); }
+  .splash-subtitle { font-size: clamp(0.7rem, 3vw, 1.1rem); letter-spacing: 0.35em; }
+  .splash-tagline { font-size: clamp(0.55rem, 2vw, 0.75rem); margin-top: 1rem; }
+  .splash-loading { width: clamp(150px, 40vw, 240px); height: 5px; margin-top: 1.2rem; }
+  .splash-logo-wrap { padding: 1.2rem; }
+  .splash-logo-box { gap: 0.3rem; }
+}
+
+/* --- Popout L (800×450) --- */
+@media (max-width: 860px) {
+  :root {
+    --panel-width: 20vw;
+    --history-size: 8vw;
+    --game-max: 78vh;
+    --frame-max: 82vh;
+    --layout-gap: 0.4vw;
+  }
+  .game-layout {
+    padding: 0 2vw;
+    max-width: 100%;
+    height: 100vh;
+    align-items: center;
+  }
+  .player-info { top: 2.5vh; left: 2.5vw; }
+  .avatar { width: 5.5vh; height: 5.5vh; font-size: 2.8vh; }
+  .player-details .label { font-size: 2.4vh; }
+  .balance { font-size: 3vh; }
+  .player-card { padding: 0.8vh 1.2vh; gap: 0.8vh; border-radius: 1.5vh; }
+  .control-panel {
+    padding: 1.9vh 1.2vw;
+    border-radius: 2vh;
+    align-self: center;
+    margin-top: 7.5vh;
+  }
+  .control-panel::before { inset: 2px; border-radius: 1.8vh; }
+  .panel-title { font-size: 2.7vh; margin-bottom: 0.85vh; }
+  .control-group { margin-bottom: 0.95vh; }
+  .control-group label { font-size: 2.2vh; margin-bottom: 0.4vh; }
+  .bet-amount { font-size: 3.9vh; padding: 1vh 1.3vh; margin-bottom: 0.8vh; border-radius: 1.3vh; }
+  .bet-controls { gap: 0.55vh; }
+  .btn-small { width: 5.7vh; height: 5.7vh; font-size: 2.8vh; border-radius: 1.1vh; }
+  .btn-quick { padding: 0.65vh; font-size: 2.3vh; }
+  .virus-control .virus-label { font-size: 2.3vh; margin-bottom: 0.45vh; }
+  .virus-label span { font-size: 2.8vh; }
+  .virus-bar-wrap { padding: 0.9vh 1.1vh; border-radius: 1.1vh; }
+  .virus-slider { height: 2.1vh; }
+  .virus-slider::-webkit-slider-runnable-track { height: 2vh; }
+  .virus-slider::-moz-range-track { height: 2vh; }
+  .virus-slider::-webkit-slider-thumb { width: 3.7vh; height: 3.7vh; margin-top: -0.9vh; }
+  .virus-slider::-moz-range-thumb { width: 3.7vh; height: 3.7vh; }
+  .virus-range-labels { font-size: 1.9vh; }
+  .virus-range-labels #virus-max { font-size: 2.4vh; }
+  .btn-launch, .btn-cashout { padding: 1.6vh; font-size: 2.7vh; letter-spacing: 0.12em; margin-bottom: 1.1vh; border-radius: 1.5vh; }
+  .cashout-sub { font-size: 1.85vh; }
+  .gains-value { font-size: 3.7vh; }
+  .gains label { font-size: 2.25vh; }
+  .grid-frame { padding: 1.2vh; max-width: none; width: 76vh; }
+  .grid-container { gap: 1vh; max-width: none; width: 72vh; height: 72vh; }
+  .game-area { min-height: auto; width: 100%; }
+  .game-message { font-size: 1rem; }
+  .game-message-wrap,
+  .game-message-wrap-success { padding: 0.6rem 1.2rem; margin-bottom: 3vh; border-radius: 8px; max-width: 72vh; width: 72vh; }
+  .game-message-wrap-success.visible { display: block !important; }
+  .game-message-sub { font-size: 0.75rem; }
+  .card .lock-icon svg { width: 5.5vh; height: 5.5vh; }
+  .multiplier { font-size: 3vh; }
+  .side-buttons { gap: 2vh; padding-top: 3vh; align-self: start; justify-self: center; }
+  .btn-side { width: 9vh; height: 9vh; border-radius: 2vh; }
+  .btn-side-icon { font-size: 3.2vh; }
+  .btn-side-label { font-size: 1.8vh; margin-top: 0.4vh; }
+  .sound-control { bottom: 1vh; right: 4vw; flex-direction: row-reverse; align-items: flex-end; gap: 0.5vw; }
+  .sound-control-toggle { width: 6vh; height: 6vh; font-size: 3vh; }
+  .sound-control-panel { transform: scale(0.75); transform-origin: bottom right; }
+  .splash-logo-img { max-width: min(400px, 75vw); max-height: 180px; }
+  .splash-logo-fallback { font-size: clamp(2.5rem, 14vw, 5rem); }
+  .splash-subtitle { font-size: clamp(0.6rem, 2.5vw, 0.9rem); letter-spacing: 0.3em; }
+  .splash-tagline { font-size: clamp(0.45rem, 1.8vw, 0.65rem); margin-top: 0.8rem; }
+  .splash-loading { width: clamp(120px, 35vw, 200px); height: 4px; margin-top: 1rem; }
+  .splash-logo-wrap { padding: 0.8rem; }
+  .splash-logo-box { gap: 0.2rem; }
+}
+
+/* --- Hauteur courte (Laptop 576px, Popout L 450px) --- */
+@media (max-height: 580px) {
+  .game-layout { padding-top: 1.6rem; padding-bottom: 0.2rem; }
+  .game-area { min-height: auto; }
+  .grid-frame { padding: 0.4rem; }
+  .grid-container { gap: 0.3rem; }
+  :root { --game-max: min(300px, 46vh); --frame-max: min(330px, 50vh); }
+}
+
+/* --- Popout S (400×225) : 2 colonnes, history masque --- */
+@media (max-width: 440px) and (max-height: 280px) {
+  :root {
+    --panel-width: 22vw;
+    --history-size: 7vw;
+    --game-max: 78vh;
+    --frame-max: 82vh;
+    --layout-gap: 0.4vw;
+  }
+  .game-layout {
+    grid-template-columns: var(--panel-width) 1fr var(--history-size);
+    padding: 0 2vw;
+    max-width: 100%;
+    height: 100vh;
+    align-items: center;
+  }
+  .player-info { top: 2.5vh; left: 2.5vw; }
+  .avatar { width: 5.5vh; height: 5.5vh; font-size: 2.8vh; }
+  .player-details .label { font-size: 2.4vh; }
+  .balance { font-size: 3vh; }
+  .player-card { padding: 0.8vh 1.2vh; gap: 0.8vh; border-radius: 1.5vh; }
+  .control-panel {
+    padding: 1.2vh 1vw;
+    border-radius: 1.5vh;
+    align-self: center;
+    margin-top: 7.5vh;
+  }
+  .control-panel::before { inset: 2px; border-radius: 1.3vh; }
+  .panel-title { font-size: 2.2vh; margin-bottom: 0.5vh; }
+  .control-group { margin-bottom: 0.5vh; }
+  .control-group label { font-size: 2vh; margin-bottom: 0.25vh; }
+  .bet-amount { font-size: 3.5vh; padding: 0.6vh 1vh; margin-bottom: 0.5vh; border-radius: 1vh; }
+  .bet-controls { gap: 0.4vh; }
+  .btn-small { width: 5vh; height: 5vh; font-size: 2.5vh; border-radius: 1vh; }
+  .btn-quick { padding: 0.5vh; font-size: 2vh; }
+  .virus-control .virus-label { font-size: 2vh; margin-bottom: 0.35vh; }
+  .virus-label span { font-size: 3vh; }
+  .virus-bar-wrap { padding: 0.4vh 0.8vh; border-radius: 0.8vh; }
+  .virus-slider { height: 1.3vh; }
+  .virus-slider::-webkit-slider-runnable-track { height: 1.3vh; }
+  .virus-slider::-moz-range-track { height: 1.3vh; }
+  .virus-slider::-webkit-slider-thumb { width: 2.2vh; height: 2.2vh; margin-top: -0.45vh; }
+  .virus-slider::-moz-range-thumb { width: 2.2vh; height: 2.2vh; }
+  .virus-range-labels { font-size: 2.2vh; }
+  .virus-range-labels #virus-max { font-size: 2.6vh; }
+  .btn-launch, .btn-cashout { padding: 1.2vh; font-size: 2.4vh; letter-spacing: 0.1em; margin-bottom: 0.8vh; border-radius: 1.2vh; }
+  .cashout-sub { font-size: 1.6vh; }
+  .gains-value { font-size: 3.2vh; }
+  .gains label { font-size: 2vh; }
+  .auto-cashout-wrap { gap: 0.2rem; margin-top: 0.25rem; }
+  .auto-cashout-label { gap: 0.25rem; }
+  .auto-cashout-checkbox { width: 10px; height: 10px; border-width: 1px; border-radius: 2px; }
+  .auto-cashout-checkbox:checked::after { font-size: 0.45rem; }
+  .auto-cashout-text { font-size: 0.32rem; letter-spacing: 0.06em; }
+  .auto-cashout-input-wrap { gap: 0.15rem; padding: 0.15rem 0.4rem; border-radius: 4px; width: 75%; }
+  .auto-cashout-prefix { font-size: 0.5rem; }
+  .auto-cashout-input { font-size: 0.55rem; }
+  .game-area { min-height: auto; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .game-message-wrap,
+  .game-message-wrap-success { flex-shrink: 0; padding: 0.25rem 0.5rem; margin-bottom: 1.5vh; border-radius: 4px; max-width: 72vh; width: 72vh; }
+  .game-message-wrap.visible,
+  .game-message-wrap-success.visible { display: block !important; }
+  .grid-frame { padding: 1.2vh; max-width: none; width: 76vh; }
+  .grid-container { gap: 1vh; max-width: none; width: 72vh; height: 72vh; }
+  .game-message { font-size: 0.5rem; letter-spacing: 0.06em; }
+  .game-message-sub { font-size: 0.35rem; }
+  .game-message-blink { width: 4px; height: 4px; }
+  .card .lock-icon svg { width: 5.5vh; height: 5.5vh; }
+  .multiplier { font-size: 3vh; }
+  .side-buttons { gap: 1.5vh; padding-top: 10vh; align-self: start; justify-self: start; margin-left: 0.5vw; }
+  .btn-side { width: 8vh; height: 8vh; border-radius: 1.5vh; }
+  .btn-side-icon { font-size: 3vh; }
+  .btn-side-label { font-size: 1.4vh; margin-top: 0.3vh; }
+  .sound-control { bottom: 1vh; right: 2.5vw; }
+  .sound-control-toggle { width: 4vh; height: 4vh; font-size: 2vh; }
+  .sound-control-panel { transform: scale(0.5); transform-origin: bottom right; }
+  .scanlines { opacity: 0.3; }
+  .splash-logo-img { max-width: min(250px, 60vw); max-height: 100px; }
+  .splash-logo-fallback { font-size: clamp(1.5rem, 10vw, 3rem); }
+  .splash-subtitle { font-size: clamp(0.4rem, 2vw, 0.6rem); letter-spacing: 0.2em; }
+  .splash-tagline { font-size: clamp(0.3rem, 1.5vw, 0.45rem); margin-top: 0.4rem; }
+  .splash-loading { width: clamp(80px, 30vw, 150px); height: 3px; margin-top: 0.5rem; }
+  .splash-logo-wrap { padding: 0.4rem; }
+  .splash-logo-box { gap: 0.15rem; }
+}
+
+/* --- Mobile portrait : bulle centrée, control en bas --- */
+@media (max-width: 460px) and (min-height: 500px) {
+  /* Bulle cartes : carré parfait, même taille/proportion que la maquette (néon cyan + violet) */
+  :root {
+    --game-max: 70vmin;
+    --frame-max: 74vmin;
+  }
+  * { -webkit-tap-highlight-color: transparent; }
   .game-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
-    padding-left: var(--space-edge);
-    padding-right: var(--space-edge);
+    grid-template-rows: 1fr auto;
+    padding: clamp(4px, 1vmin, 8px) clamp(6px, 2vmin, 12px) 0;
+    gap: 0;
+    max-width: 100%;
   }
-
-  .control-panel {
-    order: 1;
-  }
-
+  /* Zone jeu : centre la bulle, occupe l'espace dispo */
   .game-area {
+    order: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(4px, 1vmin, 8px);
+  }
+  /* Control panel : barre compacte en bas, Lancer à gauche / Cash Out à droite */
+  .control-panel {
     order: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(3px, 1vmin, 6px) clamp(4px, 1.5vmin, 10px);
+    padding: clamp(4px, 1.5vmin, 10px) clamp(6px, 2vmin, 12px) calc(clamp(4px, 1.5vmin, 10px) + var(--safe-bottom));
+    border-radius: clamp(5px, 1.5vmin, 10px);
+    min-height: 0;
+    flex-shrink: 0;
   }
-
-  .history-panel {
+  .control-panel::before { inset: 1px; border-radius: clamp(4px, 1.2vmin, 8px); }
+  .panel-title { display: none; }
+  .control-group { margin-bottom: 0; }
+  .control-group label { font-size: clamp(4px, 1.8vmin, 9px); margin-bottom: clamp(1px, 0.25vmin, 3px); }
+  .bet-amount { font-size: clamp(8px, 2.4vmin, 13px); padding: clamp(2px, 0.8vmin, 6px) clamp(3px, 1.2vmin, 8px); margin-bottom: clamp(1px, 0.4vmin, 4px); border-radius: clamp(2px, 0.8vmin, 5px); border-width: 1px; }
+  .bet-controls { gap: clamp(2px, 0.8vmin, 6px); flex-wrap: nowrap; }
+  .btn-small { width: clamp(18px, 5.5vmin, 26px); height: clamp(18px, 5.5vmin, 26px); font-size: clamp(0.5rem, 1.9vmin, 0.75rem); border-radius: clamp(2px, 0.8vmin, 5px); border-width: 1px; }
+  .btn-quick { padding: clamp(1px, 0.6vmin, 4px); font-size: clamp(0.3rem, 1.8vmin, 0.5rem); border-width: 1px; }
+  .virus-control { grid-column: 1 / -1; }
+  .virus-control .virus-label { font-size: clamp(4px, 1.7vmin, 9px); margin-bottom: clamp(1px, 0.25vmin, 3px); }
+  .virus-label span { font-size: clamp(6px, 2vmin, 12px); }
+  .virus-bar-wrap { padding: clamp(1px, 0.6vmin, 5px) clamp(3px, 1vmin, 6px); border-radius: clamp(2px, 0.8vmin, 5px); }
+  .virus-slider { height: clamp(4px, 1.3vmin, 8px); }
+  .virus-slider::-webkit-slider-runnable-track { height: clamp(4px, 1.3vmin, 8px); }
+  .virus-slider::-moz-range-track { height: clamp(4px, 1.3vmin, 8px); }
+  .virus-slider::-webkit-slider-thumb { width: clamp(10px, 3.2vmin, 18px); height: clamp(10px, 3.2vmin, 18px); margin-top: calc(-1 * clamp(2px, 0.6vmin, 4px)); }
+  .virus-slider::-moz-range-thumb { width: clamp(10px, 3.2vmin, 18px); height: clamp(10px, 3.2vmin, 18px); }
+  .virus-range-labels { font-size: clamp(4px, 1.5vmin, 9px); }
+  .virus-range-labels #virus-max { font-size: clamp(5px, 1.9vmin, 11px); }
+  /* Ordre : Mise, Virus, Gains, puis Lancer|Cash Out côte à côte */
+  .control-group:first-of-type {
+    order: 1;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(2px, 0.8vmin, 6px);
+  }
+  .control-group:first-of-type label { flex-basis: 100%; margin-bottom: 0; }
+  .control-group:first-of-type .bet-amount { margin-bottom: 0; flex: 1; min-width: 0; }
+  .control-group:first-of-type .bet-controls { display: flex; align-items: center; gap: clamp(2px, 0.8vmin, 6px); flex-wrap: nowrap; flex-shrink: 0; }
+  .virus-control { order: 2; }
+  .gains { order: 3; grid-column: 1 / -1; text-align: center; margin-top: 0; }
+  .btn-launch { order: 4; grid-column: 1; }
+  .btn-cashout { order: 5; grid-column: 2; }
+  .btn-launch, .btn-cashout { padding: clamp(4px, 1.5vmin, 10px); font-size: clamp(0.4rem, 2.2vmin, 0.65rem); letter-spacing: 0.04em; border-radius: clamp(3px, 1vmin, 6px); border-width: 1px; margin-bottom: 0; }
+  .cashout-sub { font-size: clamp(0.22rem, 1.5vmin, 0.4rem); }
+  .gains label { font-size: clamp(4px, 1.7vmin, 9px); }
+  .gains-value { font-size: clamp(8px, 2.4vmin, 14px); }
+  .auto-cashout-wrap {
+    order: 6;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(4px, 1.2vmin, 8px);
+    margin-top: clamp(1px, 0.5vmin, 4px);
+  }
+  .auto-cashout-label { flex-shrink: 0; }
+  .auto-cashout-input-wrap { flex: 1; min-width: 0; }
+  .auto-cashout-text { font-size: clamp(0.28rem, 1.6vmin, 0.45rem); }
+  .auto-cashout-input { font-size: clamp(0.35rem, 2vmin, 0.55rem); }
+  .auto-cashout-checkbox { width: clamp(7px, 2.2vmin, 12px); height: clamp(7px, 2.2vmin, 12px); }
+  /* Bulle cartes : carré parfait comme la maquette, même taille relative, bordures cyan + violet */
+  .grid-frame {
+    width: var(--frame-max);
+    height: var(--frame-max);
+    min-width: var(--frame-max);
+    min-height: var(--frame-max);
+    max-width: var(--frame-max);
+    max-height: var(--frame-max);
+    padding: 2vmin;
+    margin: 0 auto;
+    box-sizing: border-box;
+    border-radius: 14px;
+    box-shadow:
+      0 0 0 3px #22d3ee,
+      0 0 0 5px rgba(232, 121, 249, 0.7),
+      0 0 0 7px rgba(192, 38, 211, 0.4),
+      inset 0 0 0 1px rgba(34, 211, 238, 0.35),
+      0 0 24px rgba(34, 211, 238, 0.5),
+      0 0 48px rgba(232, 121, 249, 0.25);
+  }
+  .grid-frame::before {
+    inset: 6px;
+    border-radius: 10px;
+    border: 2px solid rgba(232, 121, 249, 0.5);
+    box-shadow: inset 0 0 20px rgba(232, 121, 249, 0.08), inset 0 0 0 1px rgba(34, 211, 238, 0.2);
+  }
+  .grid-container {
     width: 100%;
-    height: var(--history-size);
-    padding: clamp(0.5rem, 1vw, 0.7rem);
+    height: 100%;
+    max-width: var(--game-max);
+    max-height: var(--game-max);
+    aspect-ratio: 1;
+    gap: 1vmin;
+    margin: 0 auto;
   }
+  .card { border-width: 2px; border-radius: 8px; }
+  .card .lock-icon svg { width: clamp(12px, 3.5vmin, 20px); height: clamp(12px, 3.5vmin, 20px); }
+  .multiplier { font-size: clamp(0.45rem, 2.2vmin, 0.7rem); }
+  .side-buttons { position: fixed; top: calc(clamp(4px, 1.5vmin, 12px) + var(--safe-top)); right: clamp(4px, 1.5vmin, 12px); flex-direction: column; gap: clamp(3px, 1vmin, 8px); padding-top: 0; z-index: 30; align-items: center; }
+  .btn-side { width: clamp(24px, 7vmin, 40px); height: clamp(24px, 7vmin, 40px); border-radius: clamp(5px, 1.5vmin, 10px); }
+  .btn-side-icon { font-size: clamp(0.6rem, 2.2vmin, 0.95rem); }
+  .btn-side-label { font-size: clamp(0.25rem, 1.5vmin, 0.45rem); margin-top: clamp(1px, 0.3vmin, 4px); }
+  .player-info { top: calc(clamp(4px, 1.2vmin, 10px) + var(--safe-top)); left: clamp(4px, 1.2vmin, 10px); }
+  .avatar { width: clamp(18px, 5.5vmin, 28px); height: clamp(18px, 5.5vmin, 28px); font-size: clamp(0.5rem, 1.8vmin, 0.75rem); }
+  .player-details .label { font-size: clamp(0.3rem, 1.6vmin, 0.5rem); }
+  .balance { font-size: clamp(0.4rem, 2vmin, 0.65rem); }
+  .player-card { padding: clamp(3px, 1vmin, 8px) clamp(6px, 1.8vmin, 12px); gap: clamp(2px, 0.8vmin, 6px); border-radius: clamp(4px, 1.2vmin, 8px); }
+  .game-area { align-items: center; }
+  .game-message-wrap,
+  .game-message-wrap-success {
+    flex-shrink: 0;
+    margin-bottom: clamp(2px, 0.8vmin, 8px);
+    padding: clamp(4px, 1.2vmin, 10px) clamp(8px, 2vmin, 14px);
+    max-width: var(--frame-max);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+  .game-message-wrap.visible,
+  .game-message-wrap-success.visible { display: block !important; }
+  .game-message { font-size: clamp(0.5rem, 2.2vmin, 0.75rem); }
+  .game-message-sub { font-size: clamp(0.35rem, 1.8vmin, 0.55rem); }
+  .game-message-blink { width: clamp(4px, 1.2vmin, 8px); height: clamp(4px, 1.2vmin, 8px); }
+  .sound-control { bottom: calc(clamp(4px, 1.2vmin, 10px) + var(--safe-bottom)); right: clamp(4px, 1.2vmin, 10px); }
+  .sound-control-toggle { width: clamp(18px, 5.5vmin, 28px); height: clamp(18px, 5.5vmin, 28px); font-size: clamp(0.55rem, 2vmin, 0.85rem); }
+  .sound-control-panel { transform: scale(0.75); transform-origin: bottom right; }
+  .splash-logo-img { max-width: min(92vmin, 85vw); max-height: clamp(100px, 35vh, 180px); }
+  .splash-logo-fallback { font-size: clamp(1.8rem, 12vmin, 5rem); }
+  .splash-subtitle { font-size: clamp(0.45rem, 3vmin, 0.95rem); letter-spacing: 0.25em; }
+  .splash-tagline { font-size: clamp(0.35rem, 2.2vmin, 0.7rem); margin-top: clamp(0.4rem, 2vmin, 1rem); }
+  .splash-loading { width: clamp(100px, 55vmin, 240px); height: clamp(3px, 1vmin, 6px); margin-top: clamp(0.4rem, 2vmin, 1rem); }
+  .splash-logo-wrap { padding: clamp(0.4rem, 2vmin, 1rem); }
 }
