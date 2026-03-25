@@ -658,6 +658,124 @@ body {
   z-index: 100;
 }
 
+/* ===== INFO overlay (full-screen rules) ===== */
+.info-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 28px);
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.info-overlay.visible {
+  display: flex;
+}
+
+body.info-open {
+  overflow: hidden;
+}
+
+.info-panel {
+  width: min(980px, 96vw);
+  max-height: min(86vh, 820px);
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(232, 121, 249, 0.45);
+  background: linear-gradient(180deg, rgba(37, 40, 48, 0.92) 0%, rgba(20, 22, 30, 0.92) 100%);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.18),
+    0 0 40px rgba(232, 121, 249, 0.18),
+    0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.10), rgba(232, 121, 249, 0.10));
+}
+
+.info-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  font-size: 0.95rem;
+  color: rgba(241, 245, 249, 0.95);
+}
+
+.info-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  background: rgba(15, 15, 22, 0.55);
+  color: rgba(241, 245, 249, 0.95);
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.18);
+}
+
+.info-close:hover {
+  border-color: rgba(232, 121, 249, 0.7);
+  box-shadow: 0 0 24px rgba(232, 121, 249, 0.25);
+}
+
+.info-body {
+  padding: 16px 18px 18px;
+  overflow: auto;
+  max-height: calc(min(86vh, 820px) - 70px);
+}
+
+.info-section + .info-section {
+  margin-top: 14px;
+}
+
+.info-h {
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.10em;
+  font-weight: 700;
+  color: rgba(34, 211, 238, 0.95);
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+
+.info-p {
+  font-family: 'Share Tech Mono', sans-serif;
+  color: rgba(241, 245, 249, 0.92);
+  line-height: 1.35;
+  font-size: 0.98rem;
+}
+
+.info-dim {
+  opacity: 0.78;
+}
+
+.info-list {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  font-family: 'Share Tech Mono', sans-serif;
+  color: rgba(241, 245, 249, 0.92);
+  line-height: 1.35;
+  font-size: 0.98rem;
+}
+
+.info-list li + li {
+  margin-top: 6px;
+}
+
+.info-foot {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
 /* ===== Animation virus / hack (plein écran + cartes) ===== */
 .virus-overlay {
   position: fixed;

@@ -68,6 +68,53 @@
     <div class="virus-overlay-pulse"></div>
   </div>
 
+  <!-- INFO overlay (full screen rules & transparency) -->
+  <div class="info-overlay" id="info-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Game info">
+    <div class="info-panel" role="document">
+      <div class="info-header">
+        <div class="info-title">HOW IT WORKS</div>
+        <button type="button" class="info-close" id="info-close" aria-label="Close info">✕</button>
+      </div>
+      <div class="info-body">
+        <div class="info-section">
+          <div class="info-h">Goal</div>
+          <div class="info-p">Reveal safe cards to grow your <strong>Current Win</strong>. Avoid <strong>Virus</strong> cards.</div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-h">Bet & Current Win</div>
+          <ul class="info-list">
+            <li><strong>Bet</strong>: the amount you choose before starting.</li>
+            <li><strong>Current Win</strong>: your live pot for this round. Each safe card multiplies it.</li>
+            <li>You can <strong>Cash Out</strong> anytime after at least one safe reveal to collect the Current Win.</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <div class="info-h">Explosions (Viruses)</div>
+          <div class="info-p">More explosions means higher risk. Hitting a Virus ends the round and you lose the bet for that round.</div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-h">Auto Cashout</div>
+          <div class="info-p">Enable Auto Cashout and set a target multiplier. When your total multiplier reaches the target, the game cashes out automatically.</div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-h">Fairness & transparency</div>
+          <ul class="info-list">
+            <li>Each safe card displays its multiplier. Your Current Win updates accordingly.</li>
+            <li>Your <strong>Balance</strong> only changes when you start a round (bet is taken) and when you cash out (winnings are added).</li>
+          </ul>
+        </div>
+
+        <div class="info-section info-foot">
+          <div class="info-p info-dim">Tip: press <strong>Esc</strong> to close this screen.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <header class="player-info">
     <div class="player-card">
       <div class="avatar">👤</div>

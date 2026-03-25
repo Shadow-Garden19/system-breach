@@ -110,6 +110,9 @@ const gameMessageWrap = document.getElementById('game-message-wrap');
 const gameMessageSub = document.getElementById('game-message-sub');
 const gameMessageWrapSuccess = document.getElementById('game-message-wrap-success');
 const virusMaxEl = document.getElementById('virus-max');
+const btnInfo = document.getElementById('btn-info');
+const infoOverlay = document.getElementById('info-overlay');
+const infoClose = document.getElementById('info-close');
 
 // Son joué quand le joueur clique sur une carte virus (défaite)
 const soundVirusLose = new Audio('assets/virus-lose.m4a');
@@ -536,6 +539,31 @@ function onCardClick(e) {
 
 // Événements (après chargement du DOM)
 function initGame() {
+  function openInfo() {
+    if (!infoOverlay) return;
+    infoOverlay.classList.add('visible');
+    infoOverlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('info-open');
+  }
+
+  function closeInfo() {
+    if (!infoOverlay) return;
+    infoOverlay.classList.remove('visible');
+    infoOverlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('info-open');
+  }
+
+  if (btnInfo) btnInfo.addEventListener('click', openInfo);
+  if (infoClose) infoClose.addEventListener('click', closeInfo);
+  if (infoOverlay) {
+    infoOverlay.addEventListener('click', (e) => {
+      if (e.target === infoOverlay) closeInfo();
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeInfo();
+  });
+
   if (betMinus) betMinus.addEventListener('click', () => {
     const v0 = Number(betInput.value) || betDefault;
     const step = betDecimals === 0 ? 10 : 1; // JPY: pas fin au centime, step "simple"
