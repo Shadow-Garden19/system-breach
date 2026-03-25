@@ -5,6 +5,7 @@ import {
   fetchReplayEvent,
   getBalance as getRgsBalance,
   formatCurrency,
+  getCurrentCurrency,
   getReplayAmount,
   getReplayMode,
   getReplayEventId,
@@ -23,6 +24,13 @@ const ROWS = 5;
 const COLS = 5;
 const RGS_CARD_PATH_BET = 0.01; // chemin play→end par carte, sans impacter l'UI
 
+// Règles de mise par devise (fallback local si RGS config absente/incomplète)
+const BET_RULES_BY_CURRENCY = {
+  USD: { min: 0.10, max: 1000, default: 1.00, decimals: 2 },
+  JPY: { min: 10, max: 150000, default: 100, decimals: 0 },
+  MXN: { min: 1, max: 15000, default: 10, decimals: 2 }
+};
+
 // État du jeu
 let balance = 0;
 let currentBet = 10;
@@ -37,6 +45,44 @@ let virusAnimationActive = false;
 let history = [];
 let rgsClickBusy = false;         // verrou pendant un cycle play→endRound
 let autoplayActive = false;      // mode auto : lance, révèle les cartes, cash out au seuil
+
+// Contraintes de mise actives (dépendent de la devise)
+let betMin = 0.10;
+let betMax = 1000;
+let betDefault = 1.00;
+let betDecimals = 2;
+
+function clamp(n, min, max) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function normalizeBetForCurrency(amount, currency) {
+  const rules = BET_RULES_BY_CURRENCY[currency] || null;
+  const decimals = rules ? rules.decimals : 2;
+  const factor = Math.pow(10, decimals);
+  return Math.round(amount * factor) / factor;
+}
+
+function getCurrencyRules(currency) {
+  const rules = BET_RULES_BY_CURRENCY[currency];
+  if (!rules) return null;
+  return { ...rules };
+}
+
+function setBetRulesFromCurrency(currency) {
+  const rules = getCurrencyRules(currency);
+  if (!rules) return;
+  betMin = rules.min;
+  betMax = rules.max;
+  betDefault = rules.default;
+  betDecimals = rules.decimals;
+}
+
+function clampBetToRules(amount) {
+  const cappedByBalance = Math.min(balance, betMax);
+  const n = clamp(amount, betMin, cappedByBalance);
+  return normalizeBetForCurrency(n, getCurrentCurrency());
+}
 
 // Éléments DOM
 const balanceEl = document.getElementById('balance');
@@ -85,7 +131,7 @@ introMusic.load();
 // Mise à jour affichage solde et gains
 function updateUI() {
   if (balanceEl) balanceEl.textContent = balance.toFixed(2);
-  const bet = Number(betInput && betInput.value) || 10;
+  const bet = Number(betInput && betInput.value) || betDefault;
   // Pendant la partie, le joueur "joue" avec la cagnotte (gains actuels),
   // pas avec la mise initiale. On l'affiche aussi dans le bloc "MISE".
   if (betDisplay) {
@@ -311,7 +357,7 @@ function startRound() {
   const betVal = Number(betInput && betInput.value) || 10;
   const bet = Math.max(0.01, Math.min(balance, betVal));
   if (bet > balance) {
-    if (gameMessage) gameMessage.textContent = 'Solde insuffisant.';
+    if (gameMessage) gameMessage.textContent = 'Insufficient balance.';
     if (gameMessageSub) gameMessageSub.textContent = '';
     if (gameMessage) gameMessage.className = 'game-message';
     if (gameMessageWrap) gameMessageWrap.classList.add('visible');
@@ -429,10 +475,10 @@ function endGame(won) {
     if (gameMessageWrapSuccess) gameMessageWrapSuccess.classList.remove('visible');
     if (gameMessageWrap) gameMessageWrap.classList.add('visible', 'infection');
     if (gameMessage) {
-      gameMessage.textContent = 'EXPLOSION ! PERDU !';
+      gameMessage.textContent = 'BOOM! YOU LOST!';
       gameMessage.className = 'game-message infection';
     }
-    if (gameMessageSub) gameMessageSub.textContent = 'VOUS AVEZ PERDU LA MISE';
+    if (gameMessageSub) gameMessageSub.textContent = 'YOU LOST YOUR BET';
   }
   // Fin de round: la cagnotte est terminée (cashout ou perdu)
   stakeInPlay = 0;
@@ -491,23 +537,29 @@ function onCardClick(e) {
 // Événements (après chargement du DOM)
 function initGame() {
   if (betMinus) betMinus.addEventListener('click', () => {
-    const v = Math.max(0.5, (Number(betInput.value) || 10) - 1);
-    betInput.value = v.toFixed(2);
+    const v0 = Number(betInput.value) || betDefault;
+    const step = betDecimals === 0 ? 10 : 1; // JPY: pas fin au centime, step "simple"
+    const v = clampBetToRules(v0 - step);
+    betInput.value = v.toFixed(betDecimals);
     updateUI();
   });
   if (betPlus) betPlus.addEventListener('click', () => {
-    const v = Math.min(balance, (Number(betInput.value) || 10) + 1);
-    betInput.value = v.toFixed(2);
+    const v0 = Number(betInput.value) || betDefault;
+    const step = betDecimals === 0 ? 10 : 1;
+    const v = clampBetToRules(v0 + step);
+    betInput.value = v.toFixed(betDecimals);
     updateUI();
   });
   if (betHalf) betHalf.addEventListener('click', () => {
-    const v = Math.max(0.5, (Number(betInput.value) || 10) / 2);
-    betInput.value = v.toFixed(2);
+    const v0 = Number(betInput.value) || betDefault;
+    const v = clampBetToRules(v0 / 2);
+    betInput.value = v.toFixed(betDecimals);
     updateUI();
   });
   if (betDouble) betDouble.addEventListener('click', () => {
-    const v = Math.min(balance, (Number(betInput.value) || 10) * 2);
-    betInput.value = v.toFixed(2);
+    const v0 = Number(betInput.value) || betDefault;
+    const v = clampBetToRules(v0 * 2);
+    betInput.value = v.toFixed(betDecimals);
     updateUI();
   });
 
@@ -530,8 +582,9 @@ function initGame() {
   if (betInput) {
     betInput.addEventListener('input', updateUI);
     betInput.addEventListener('change', () => {
-      const v = Math.max(0.5, Math.min(balance, Number(betInput.value) || 10));
-      betInput.value = v.toFixed(2);
+      const v0 = Number(betInput.value) || betDefault;
+      const v = clampBetToRules(v0);
+      betInput.value = v.toFixed(betDecimals);
       updateUI();
     });
   }
@@ -742,6 +795,35 @@ function initSplash() {
 async function initRgsIntegration() {
   try {
     const auth = await authenticate();
+    const API_MULTIPLIER = 1000000;
+
+    function toGameAmountMaybeMicro(v) {
+      if (v == null) return null;
+      const n = typeof v === 'number' ? v : Number(v);
+      if (!Number.isFinite(n)) return null;
+      // Heuristique: les montants API sont souvent en micro-unités.
+      if (Math.abs(n) >= 10000) return n / API_MULTIPLIER;
+      return n;
+    }
+
+    function pickRoundBetAmount(round) {
+      if (!round) return null;
+      // Formats possibles selon RGS: round.bet.amount, round.amount, round.wager, etc.
+      const candidates = [
+        round?.bet?.amount,
+        round?.betAmount,
+        round?.amount,
+        round?.wager,
+        round?.wagerAmount,
+        round?.stake,
+        round?.stakeAmount
+      ];
+      for (const c of candidates) {
+        const amt = toGameAmountMaybeMicro(c);
+        if (typeof amt === 'number' && amt > 0) return amt;
+      }
+      return null;
+    }
 
     if (isReplayMode()) {
       // Mode REPLAY : on affiche les infos de la mise rejouée
@@ -750,9 +832,7 @@ async function initRgsIntegration() {
       const replayEventId = getReplayEventId();
       balance = getRgsBalance() || 0;
       if (betInput) betInput.value = replayAmount.toFixed(2);
-      if (gameMessage) {
-        gameMessage.textContent = 'MODE REPLAY';
-      }
+      if (gameMessage) gameMessage.textContent = 'REPLAY MODE';
       if (gameMessageSub) {
         gameMessageSub.textContent = `Event ${replayEventId} — mode ${replayMode}`;
       }
@@ -767,6 +847,22 @@ async function initRgsIntegration() {
       } else {
         // Fallback si aucune info : même comportement qu’avant
         balance = 100;
+      }
+
+      // Applique les règles de mise par devise demandées (min/max/default)
+      const currency = getCurrentCurrency() || auth?.currency || 'EUR';
+      setBetRulesFromCurrency(currency);
+
+      // Gestion des rafraîchissements:
+      // si un round est en cours, on restaure la mise exacte depuis /authenticate
+      // (sinon, on peut restaurer un bet par défaut depuis la config).
+      const isActive = !!auth?.round?.active;
+      const roundBet = isActive ? pickRoundBetAmount(auth.round) : null;
+      const defaultBet = toGameAmountMaybeMicro(auth?.defaultBetLevel);
+      const restoredRaw = roundBet ?? defaultBet ?? betDefault;
+      if (betInput && typeof restoredRaw === 'number' && restoredRaw > 0) {
+        const restored = clampBetToRules(restoredRaw);
+        betInput.value = restored.toFixed(betDecimals);
       }
     }
   } catch (e) {

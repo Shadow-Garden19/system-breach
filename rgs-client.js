@@ -161,7 +161,7 @@ export async function fetchReplayEvent() {
   const version = getReplayVersion();
   const mode = String(getReplayModeRaw() || '').trim();
   const event = String(getReplayEventId());
-  const lang = getParam('lang') || getParam('language') || 'fr';
+  const lang = getParam('lang') || getParam('language') || 'en';
   const url = `${base}/bet/replay/${encodeURIComponent(game)}/${encodeURIComponent(
     version
   )}/${encodeURIComponent(mode)}/${encodeURIComponent(event)}?language=${encodeURIComponent(lang)}`;
@@ -204,7 +204,7 @@ export async function authenticate() {
   try {
     const response = await getRGSResponse('/wallet/authenticate', {
       sessionID: _INITIAL_SESSION_ID,
-      language: getParam('lang') || getParam('language') || 'fr'
+      language: getParam('lang') || getParam('language') || 'en'
     });
 
     currentBalance = response.balance.amount;

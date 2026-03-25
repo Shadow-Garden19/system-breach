@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>SYSTEM BREACH — L'Infection</title>
+  <title>SYSTEM BREACH — The Infection</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -72,8 +72,8 @@
     <div class="player-card">
       <div class="avatar">👤</div>
       <div class="player-details">
-        <span class="label">JOUEUR 1</span>
-        <span class="balance">Solde: <strong id="balance">100.00</strong> €</span>
+        <span class="label">PLAYER 1</span>
+        <span class="balance">Balance: <strong id="balance">100.00</strong> €</span>
       </div>
     </div>
   </header>
@@ -82,11 +82,11 @@
     <!-- Panneau de contrôle (gauche) -->
     <aside class="control-panel">
       <div class="control-group">
-        <label>MISE</label>
+        <label>BET</label>
         <div class="bet-amount" id="bet-display">10.00 €</div>
         <div class="bet-controls">
-          <button type="button" class="btn-small" id="bet-minus" aria-label="Diminuer la mise">−</button>
-          <button type="button" class="btn-small" id="bet-plus" aria-label="Augmenter la mise">+</button>
+          <button type="button" class="btn-small" id="bet-minus" aria-label="Decrease bet">−</button>
+          <button type="button" class="btn-small" id="bet-plus" aria-label="Increase bet">+</button>
           <button type="button" class="btn-quick btn-quick-double" id="bet-double" title="x2">x2</button>
           <button type="button" class="btn-quick" id="bet-half" title="//2">//2</button>
         </div>
@@ -94,25 +94,25 @@
       </div>
 
       <div class="control-group virus-control">
-        <label class="virus-label">NB D'EXPLOSIONS <span id="virus-count">(3)</span></label>
+        <label class="virus-label">EXPLOSIONS <span id="virus-count">(3)</span></label>
         <div class="virus-bar-wrap">
           <div class="virus-range-labels">
             <span>1</span>
             <span id="virus-max">3 / 24</span>
           </div>
-          <input type="range" id="virus-slider" min="1" max="24" value="3" class="virus-slider" aria-label="Nombre de virus" />
+          <input type="range" id="virus-slider" min="1" max="24" value="3" class="virus-slider" aria-label="Number of viruses" />
         </div>
       </div>
 
-      <button type="button" class="btn-launch" id="btn-launch">LANCER</button>
+      <button type="button" class="btn-launch" id="btn-launch">START</button>
 
       <div class="control-group gains">
-        <label>GAINS ACTUELS</label>
+        <label>CURRENT WIN</label>
         <div class="gains-value" id="gains-display">0.00 €</div>
       </div>
 
       <button type="button" class="btn-cashout" id="btn-cashout" disabled>
-        CASH OUT<br /><span class="cashout-sub">ENCAISSER</span>
+        CASH OUT<br /><span class="cashout-sub">COLLECT</span>
       </button>
 
       <div class="auto-cashout-wrap" id="auto-cashout-wrap">
@@ -140,11 +140,11 @@
       <div class="game-message-wrap game-message-wrap-success" id="game-message-wrap-success">
         <span class="game-message-blink game-message-blink-l"></span>
         <span class="game-message-blink game-message-blink-r"></span>
-        <div class="game-message" id="game-message-success" aria-live="polite">Encaissement réussi !</div>
+        <div class="game-message" id="game-message-success" aria-live="polite">Cash out successful!</div>
         <div class="game-message-sub" id="game-message-sub-success"></div>
       </div>
       <div class="grid-frame">
-        <div class="grid-container" id="grid-container" aria-label="Grille de 25 modules">
+        <div class="grid-container" id="grid-container" aria-label="5 by 5 grid">
           <!-- 25 cartes générées en JS -->
         </div>
       </div>
@@ -156,7 +156,7 @@
         <span class="btn-side-icon">▶▶</span>
         <span class="btn-side-label">AUTO</span>
       </button>
-      <button type="button" class="btn-side btn-info" id="btn-info" aria-label="Informations">
+      <button type="button" class="btn-side btn-info" id="btn-info" aria-label="Info">
         <span class="btn-side-icon">ℹ</span>
         <span class="btn-side-label">INFO</span>
       </button>
@@ -164,16 +164,16 @@
   </main>
 
   <!-- Contrôle du son (bas gauche) -->
-  <div class="sound-control" aria-label="Contrôle du son">
-    <button type="button" class="sound-control-toggle" id="sound-toggle" aria-label="Ouvrir le panneau son">🔊</button>
+  <div class="sound-control" aria-label="Sound controls">
+    <button type="button" class="sound-control-toggle" id="sound-toggle" aria-label="Open sound panel">🔊</button>
     <div class="sound-control-panel" id="sound-panel">
-      <span class="sound-control-title">SON</span>
+      <span class="sound-control-title">SOUND</span>
       <label class="sound-control-label">
-        <span>Musique</span>
+        <span>Music</span>
         <input type="range" id="sound-music" min="0" max="100" value="50" class="sound-slider" />
       </label>
       <label class="sound-control-label">
-        <span>Bruitages</span>
+        <span>SFX</span>
         <input type="range" id="sound-sfx" min="0" max="100" value="100" class="sound-slider" />
       </label>
     </div>
